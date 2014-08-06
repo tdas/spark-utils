@@ -12,7 +12,6 @@ import time
 
 SPARK_SHELL =   "./spark/bin/spark-shell"
 PYSPARK_SHELL = "./spark/bin/pyspark"
-SHARK_SHELL =   "./shark/shark-withinfo"
 HDFS_BIN =      "./ephemeral-hdfs/bin/hadoop dfs"
 
 def run_cmd(cmd, stdin=""):
@@ -76,30 +75,5 @@ read_kv_data_pyspark = \
 sc.textFile("/test").count()
 exit()
 """
-# DISABLED - need to ask Josh what the right way to do this is
-#result = run_cmd(PYSPARK_SHELL, read_kv_data_pyspark)
-#assert "10000" in result, "PySpark shell couldn't read HDFS generated data."
-
-create_shark_table = \
-"""
-./shark/bin/shark-withinfo -e "DROP TABLE IF EXISTS test; CREATE EXTERNAL TABLE test (key STRING, value STRING) ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' STORED AS TEXTFILE LOCATION '/test';"
-"""
-run_cmd(create_shark_table)
-
-read_kv_data_shark = \
-"""
-./shark/bin/shark-withinfo -e "SELECT count(*) from test;"
-"""
-result = run_cmd(read_kv_data_shark)
-assert "10000" in result, "Shark couldn't read HDFS generated data."
-
-group_by_kv_data_shark = \
-"""
-./shark/bin/shark-withinfo -e "SELECT COUNT (*) FROM test GROUP BY key;"
-"""
-result = run_cmd(group_by_kv_data_shark)
-occurances = len(re.compile("1000").findall(result))
-print result
-assert occurances == 10, "Shark could not group by keys correctly"
 
 print "ALL TESTS PASSED"
